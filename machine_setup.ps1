@@ -3,7 +3,7 @@ Checkpoint-Computer -Description "Running machine setup"
 Update-Help
 
 if (!(Test-Path $PROFILE)) {
-    Out-File -FilePath $PROFILE -Encoding utf8 -InputObject "#Powershell Profile"
+    New-Item -Path $PROFILE -Value "#Powershell Profile" -ItemType File -Force
 }
 
 Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
@@ -12,6 +12,8 @@ Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://cho
 $registryUpdates = @{
     "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\EnableAutoTray" = 0
     "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\HideFileExt" = 0
+    "HKCU\Software\Microsoft\Windows\Search\SearchboxTaskbarMode" = 1
+    "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\fDenyTSConnections" = 0
 }
 
 $registryUpdates.GetEnumerator() | ForEach-Object {
@@ -74,9 +76,9 @@ $chocoPrograms = @(
 
 $chocoPrograms | ForEach-Object {
     if ($_ -is [System.String]) {
-        & choco install $_ -y
+        & choco install $_ -y --timeout 0
     } else {
-        & choco install $_[0] --params $_[1] -y
+        & choco install $_[0] --params $_[1] -y --timeout 0
     }
 }
 
