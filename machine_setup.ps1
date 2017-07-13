@@ -12,7 +12,7 @@ Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://cho
 $registryUpdates = @{
     "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\EnableAutoTray" = 0
     "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\HideFileExt" = 0
-    "HKCU\Software\Microsoft\Windows\Search\SearchboxTaskbarMode" = 1
+    "HKCU\Software\Microsoft\Windows\CurrentVersion\Search\SearchboxTaskbarMode" = 1
     "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\fDenyTSConnections" = 0
 }
 
@@ -41,7 +41,6 @@ $chocoPrograms = @(
 
     # #Git 
     ,@("Git", "/GitAndUnixToolsOnPath /WindowsTerminal")
-    "PoshGit"
     "SourceTree"    
     "TortoiseGit"
 
@@ -85,6 +84,37 @@ $chocoPrograms | ForEach-Object {
 # package is not updated to latest chocolatey api, can be used with a random echo
 Write-Output 'st3' | & choco install SublimeText3.PackageControl -y
 
+Install-PackageProvider Nuget -Force
+
+$powershellPackages = @(
+    "GitHubProvider"
+    "Posh-Git"
+    "PSColor"
+    "Pscx"
+)
+
+$powershellPackages | ForEach-Object {
+    if (!($_ -in (Get-InstalledModule).Name)) {
+        Install-Module $_ -Force -AllowClobber
+        Add-Content -Path $PROFILE -Value "Import-Module $_"
+    }
+}
+
+$powershellGitHubPackages = @(
+    ,@("DuFace", "PoShAncestry")
+)
+
+# probably a smarter way to do this
+$powershellGitHubPackages | ForEach-Object {
+    $user = $_[0]
+    $repo = $_[1]
+
+    if (!($_[1] -in (Get-Module).Name)) {
+        Install-Package -ProviderName Github -Source $user -Name $repo -Force
+        Add-Content -Path $PROFILE -Value "Import-Module '$env:LOCALAPPDATA\OneGet\GitHub\$repo-master\$repo.psm1'"
+    }
+}
+
 $vsCodeExtensions = @(
     "donjayamanne.githistory"
     "eamodio.gitlens"    
@@ -97,3 +127,19 @@ $vsCodeExtensions | ForEach-Object {
 
 refreshenv
 . $PROFILE
+
+# customize cmder
+$cmderDir = "C:\tools\cmder"
+$cmderBinDir = "$cmderDir\bin"
+$cmderConfigDir = "$cmderDir\config"
+$cmderVendorDir = "$cmderDir\vendor"
+$cmderPsProfile = "$cmderConfigDir\user-profile.ps1"
+
+
+
+if (!(Test-Path $cmderPsProfile)) {
+    & $cmderVendorDir\profile.ps1
+    Add-Content -Path $cmderPsProfile -Value ". `$PROFILE"
+}
+
+& $cmderVendorDir\clink\clink_x64.exe --cfgdir $cmderConfigDir set history_io 1
