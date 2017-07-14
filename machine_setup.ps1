@@ -20,6 +20,8 @@ $registryUpdates.GetEnumerator() | ForEach-Object {
     & reg add (Split-Path -Parent $_.Key) /v (Split-Path -Leaf $_.Key) /t REG_DWORD /d $_.Value /f | Out-Null
 }
 
+Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -Enabled True
+
 # apply above registry settings
 Stop-Process -ProcessName explorer
 
@@ -35,25 +37,29 @@ $chocoPrograms = @(
     "SysInternals"
     "WinDirStat"
 
-    # #Editors
+    # Editors
     "Notepad2"
     "SublimeText3"
 
-    # #Git 
+    # Git 
     ,@("Git", "/GitAndUnixToolsOnPath /WindowsTerminal")
     "SourceTree"    
     "TortoiseGit"
 
-    # #Diff Tools
+    # Network Tools
+    "Fiddler4"
+    "PostMan"
+
+    # Diff Tools
     "BeyondCompare"
     "BeyondCompare-Integration" # needs to be after git, BeyondCompare, and TortoiseGit
     "WinMerge"
 
-    # #VSCode
+    # VSCode
     ,@("VisualStudioCode", "/NoDesktopIcon")
     "VSCode-PowerShell" # code --install ooesn't work for this extension...
 
-    #VS2017
+    # VS2017
     ,@("VisualStudio2017Enterprise", "--add Microsoft.VisualStudio.Workload.DataScience --includeRecommended --includeOptional") # there's no datascience package for some reason
     "VisualStudio2017-Workload-Azure"
     "VisualStudio2017-Workload-Data"
@@ -136,7 +142,7 @@ $cmderVendorDir = "$cmderDir\vendor"
 $cmderCmdProfile = "$cmderConfiDir\user-profile.cmd"
 $cmderPsProfile = "$cmderConfigDir\user-profile.ps1"
 
-## enable aliases to run with clink/powershell
+# enable aliases to run with clink/powershell
 @"
 & doskey /MACROS | 
     ForEach-Object { ,(`$_ -split "=").Trim() } |
