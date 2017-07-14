@@ -75,9 +75,9 @@ $chocoPrograms = @(
 
 $chocoPrograms | ForEach-Object {
     if ($_ -is [System.String]) {
-        & choco install $_ -y --timeout 0
+        & choco upgrade $_ -y --timeout 0
     } else {
-        & choco install $_[0] --params $_[1] -y --timeout 0
+        & choco upgrade $_[0] --params $_[1] -y --timeout 0
     }
 }
 
@@ -133,13 +133,44 @@ $cmderDir = "C:\tools\cmder"
 $cmderBinDir = "$cmderDir\bin"
 $cmderConfigDir = "$cmderDir\config"
 $cmderVendorDir = "$cmderDir\vendor"
+$cmderCmdProfile = "$cmderConfiDir\user-profile.cmd"
 $cmderPsProfile = "$cmderConfigDir\user-profile.ps1"
 
+## enable aliases to run with clink/powershell
+@"
+& doskey /MACROS | 
+    ForEach-Object { ,(`$_ -split "=").Trim() } |
+    ForEach-Object {
+@"
+@if "%_echo%"=="" echo off
+`$(`$_[1] -replace "\$", "%")
+`"@ | New-Item "`$env:CMDER_ROOT\bin\`$(`$_[0]).cmd" -ItemType File -Force | Out-Null
+    }
+"@ | New-Item $cmderBinDir\New-CommandsFromAliases.ps1 -ItemType File -Force
 
+@"
+if "%_echo%"=="" echo off
+powershell %~dp0\New-CommandsFromAliases.ps1
+"@ | New-Item $cmderBinDir\New-CommandsFromAliases.cmd -ItemType File -Force
 
 if (!(Test-Path $cmderPsProfile)) {
     & $cmderVendorDir\profile.ps1
-    Add-Content -Path $cmderPsProfile -Value ". `$PROFILE"
+@"
+. `$PROFILE
+& doskey /MACROFILE="$env:CMDER_ROOT\config\user-aliases.cmd"
+& New-CommandsFromAliases
+"@ | Add-Content -Path $cmderPsProfile
+}
+
+if (!(Test-Path $cmderCmdProfile)) {
+    & $cmderVendorDir\init.bat
+    Add-Content -Path $cmderCmdProfile -Value "New-CommandsFromAliases"
 }
 
 & $cmderVendorDir\clink\clink_x64.exe --cfgdir $cmderConfigDir set history_io 1
+
+# clean desktop
+Remove-Item "$env:PUBLIC\Desktop\*.lnk"
+Remove-Item "$env:USERPROFILE\Desktop\*.lnk"
+
+Enable-WindowsOptionalFeature -FeatureName IIS-ASPNET45,Microsoft-Hyper-V-All -Online -All
