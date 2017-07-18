@@ -131,9 +131,6 @@ $vsCodeExtensions | ForEach-Object {
     & code --install-extension $_
 }
 
-refreshenv
-. $PROFILE
-
 # customize cmder
 $cmderDir = "C:\tools\cmder"
 $cmderBinDir = "$cmderDir\bin"
@@ -180,3 +177,21 @@ Remove-Item "$env:PUBLIC\Desktop\*.lnk"
 Remove-Item "$env:USERPROFILE\Desktop\*.lnk"
 
 Enable-WindowsOptionalFeature -FeatureName IIS-ASPNET45,Microsoft-Hyper-V-All -Online -All
+
+# command correction
+pip install --upgrade thefuck
+if (!((Get-Content $PROFILE) -match "fuck")) {
+@"  
+`$env:PYTHIONIOENCODING="utf-8"
+Invoke-Expression "`$(thefuck --alias)"
+"@ | Add-Content -Path $PROFILE
+}
+
+@"
+@if "%_echo%"=="" echo off
+set PYTHONIOENCODING=utf-8
+for /F "usebackq delims=" %%A in (``history ^| sed "x;$!d" ^| xargs -0 thefuck``) do %%A
+"@ | New-Item $cmderBinDir\fuck.cmd -ItemType File -Force
+
+refreshenv
+. $PROFILE
