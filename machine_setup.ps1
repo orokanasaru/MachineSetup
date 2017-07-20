@@ -41,9 +41,9 @@ $chocoPrograms = @(
     "Notepad2"
     "SublimeText3"
 
-    # Git 
+    # Git
     ,@("Git", "/GitAndUnixToolsOnPath /WindowsTerminal")
-    "SourceTree"    
+    "SourceTree"
     "TortoiseGit"
 
     # Network Tools
@@ -123,7 +123,8 @@ $powershellGitHubPackages | ForEach-Object {
 
 $vsCodeExtensions = @(
     "donjayamanne.githistory"
-    "eamodio.gitlens"    
+    "eamodio.gitlens"
+    "ms-vscode.csharp"
     "waderyan.gitblame"
 )
 
@@ -141,7 +142,7 @@ $cmderPsProfile = "$cmderConfigDir\user-profile.ps1"
 
 # enable aliases to run with clink/powershell
 @"
-& doskey /MACROS | 
+& doskey /MACROS |
     ForEach-Object { ,(`$_ -split "=").Trim() } |
     ForEach-Object {
 @"
@@ -181,7 +182,7 @@ Enable-WindowsOptionalFeature -FeatureName IIS-ASPNET45,Microsoft-Hyper-V-All -O
 # command correction
 pip install --upgrade thefuck
 if (!((Get-Content $PROFILE) -match "fuck")) {
-@"  
+@"
 `$env:PYTHIONIOENCODING="utf-8"
 Invoke-Expression "`$(thefuck --alias)"
 "@ | Add-Content -Path $PROFILE
@@ -192,6 +193,17 @@ Invoke-Expression "`$(thefuck --alias)"
 set PYTHONIOENCODING=utf-8
 for /F "usebackq delims=" %%A in (``history ^| sed "x;$!d" ^| xargs -0 thefuck``) do %%A
 "@ | New-Item $cmderBinDir\fuck.cmd -ItemType File -Force
+
+# customize git
+$gitConfig = @{
+    "alias.trim" = "!git branch -vv | sed '/\[[^]]*: gone\]/ !d' | awk '{print `$1}' | xargs git branch -D"
+    "remote.origin.prune" = $true
+    "rerere.enabled" = $true
+}
+
+$gitConfig.GetEnumerator() | ForEach-Object {
+    & git config --global $_.Key $_.Value
+}
 
 refreshenv
 . $PROFILE
