@@ -125,6 +125,7 @@ $vsCodeExtensions = @(
     "donjayamanne.githistory"
     "eamodio.gitlens"
     "ms-vscode.csharp"
+    "Tyriar.sort-lines"
     "waderyan.gitblame"
 )
 
