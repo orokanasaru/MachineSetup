@@ -34,6 +34,7 @@ $chocoPrograms = @(
     ,@("Everything", "/folder-context-menu /run-on-system-startup /service /start-menu-shortcuts")
     "GoogleChrome"
     "Microsoft-Teams"
+    "nteract"
     "Nuget.CommandLine"
     "Nuget-CredentialProvider-VSS"
     "RapidEE"
@@ -208,6 +209,17 @@ $gitConfig = @{
 $gitConfig.GetEnumerator() | ForEach-Object {
     & git config --global $_.Key $_.Value
 }
+
+# install r jupyter
+if (!($env:Path -match "R_SERVER")) {
+    [Environment]::SetEnvironmentVariable("Path", "$($env:Path);C:\Program Files\Microsoft\R Client\R_SERVER\bin\x64")
+}
+
+@"
+install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'devtools', 'uuid', 'digest'))
+devtools::install_github('IRkernel/IRkernel')
+IRkernel::installspec()
+"@ | % { & Rscript.exe -e $_ }
 
 refreshenv
 . $PROFILE
