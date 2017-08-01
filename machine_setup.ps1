@@ -212,7 +212,10 @@ $gitConfig.GetEnumerator() | ForEach-Object {
 
 # install r jupyter
 if (!($env:Path -match "R_SERVER")) {
-    [Environment]::SetEnvironmentVariable("Path", "$($env:Path);C:\Program Files\Microsoft\R Client\R_SERVER\bin\x64")
+    [Environment]::SetEnvironmentVariable(
+        "Path",
+        "$($env:Path);C:\Program Files\Microsoft\R Client\R_SERVER\bin\x64",
+        [System.EnvironmentVariableTarget]::Machine)
 }
 
 @"
