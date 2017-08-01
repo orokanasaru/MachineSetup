@@ -81,6 +81,8 @@ $chocoPrograms = @(
     "dotmemory"
     "dotpeek"
     "dottrace"
+
+    "R.Studio" # install after VS to use MS R
 )
 
 $chocoPrograms | ForEach-Object {
