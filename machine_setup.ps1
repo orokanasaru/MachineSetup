@@ -27,12 +27,15 @@ Stop-Process -ProcessName explorer
 
 $chocoPrograms = @(
     "7zip"
+    "AutoHotkey"
+    "AutoIt"
     "ChocolateyGUI"
     "Cmder"
     ,@("Everything", "/folder-context-menu /run-on-system-startup /service /start-menu-shortcuts")
     "GoogleChrome"
     "Microsoft-Teams"
     "Nuget.CommandLine"
+    "Nuget-CredentialProvider-VSS"
     "RapidEE"
     "SysInternals"
     "WinDirStat"
