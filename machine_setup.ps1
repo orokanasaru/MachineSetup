@@ -99,6 +99,7 @@ Write-Output 'st3' | & choco install SublimeText3.PackageControl -y
 Install-PackageProvider Nuget -Force
 
 $powershellPackages = @(
+    "Carbon"
     "GitHubProvider"
     "Posh-Git"
     "PSColor"
@@ -220,11 +221,28 @@ if (!($env:Path -match "R_SERVER")) {
         [System.EnvironmentVariableTarget]::Machine)
 }
 
+$rPackages = @(
+    "crayon"
+    "data.table"
+    "devtools"
+    "digest"
+    "dplyr"
+    "evaluate"
+    "lubridate"
+    "IRdisplay"
+    "pbdZMQ"
+    "repr"
+    "uuid"
+)
+
 @"
-install.packages(c('repr', 'IRdisplay', 'evaluate', 'crayon', 'pbdZMQ', 'devtools', 'uuid', 'digest'))
+install.packages(c($(($rPackages | ForEach-Object { "'$_'" }) -join ", ")))
 devtools::install_github('IRkernel/IRkernel')
 IRkernel::installspec()
-"@ | % { & Rscript.exe -e $_ }
+"@ | ForEach-Object { & Rscript.exe -e $_ }
+
+# make r library writable
+Grant-Permission -Path "C:/Program Files/Microsoft/R Client/R_SERVER/library" -Identity (& whoami) -Permission Write
 
 refreshenv
 . $PROFILE
