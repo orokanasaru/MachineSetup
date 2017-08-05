@@ -93,8 +93,10 @@ $chocoPrograms | ForEach-Object {
     }
 }
 
+Stop-Process -Name sublime_text 
+
 # package is not updated to latest chocolatey api, can be used with a random echo
-Write-Output 'st3' | & choco install SublimeText3.PackageControl -y
+Write-Output 'st3' | & choco upgrade SublimeText3.PackageControl -y
 
 Install-PackageProvider Nuget -Force
 
@@ -148,6 +150,8 @@ $cmderVendorDir = "$cmderDir\vendor"
 $cmderCmdProfile = "$cmderConfiDir\user-profile.cmd"
 $cmderPsProfile = "$cmderConfigDir\user-profile.ps1"
 
+& refreshenv
+
 # enable aliases to run with clink/powershell
 @"
 & doskey /MACROS |
@@ -165,6 +169,10 @@ if "%_echo%"=="" echo off
 powershell %~dp0\New-CommandsFromAliases.ps1
 "@ | New-Item $cmderBinDir\New-CommandsFromAliases.cmd -ItemType File -Force
 
+# switch to c:
+$location = Get-Location
+Set-Location c:
+
 if (!(Test-Path $cmderPsProfile)) {
     & $cmderVendorDir\profile.ps1
 @"
@@ -179,13 +187,13 @@ if (!(Test-Path $cmderCmdProfile)) {
     Add-Content -Path $cmderCmdProfile -Value "New-CommandsFromAliases"
 }
 
+Set-Location $location
+
 & $cmderVendorDir\clink\clink_x64.exe --cfgdir $cmderConfigDir set history_io 1
 
 # clean desktop
 Remove-Item "$env:PUBLIC\Desktop\*.lnk"
 Remove-Item "$env:USERPROFILE\Desktop\*.lnk"
-
-Enable-WindowsOptionalFeature -FeatureName IIS-ASPNET45,Microsoft-Hyper-V-All -Online -All
 
 # command correction
 pip install --upgrade thefuck
@@ -220,6 +228,8 @@ if (!($env:Path -match "R_SERVER")) {
         "$($env:Path);C:\Program Files\Microsoft\R Client\R_SERVER\bin\x64",
         [System.EnvironmentVariableTarget]::Machine)
 }
+    
+& refreshenv
 
 $rPackages = @(
     "crayon"
@@ -244,5 +254,6 @@ IRkernel::installspec()
 # make r library writable
 Grant-Permission -Path "C:/Program Files/Microsoft/R Client/R_SERVER/library" -Identity (& whoami) -Permission Write
 
-refreshenv
+Enable-WindowsOptionalFeature -FeatureName IIS-ASPNET45,Microsoft-Hyper-V-All -Online -All
+
 . $PROFILE
