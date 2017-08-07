@@ -14,10 +14,19 @@ $registryUpdates = @{
     "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\HideFileExt" = 0
     "HKCU\Software\Microsoft\Windows\CurrentVersion\Search\SearchboxTaskbarMode" = 1
     "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\fDenyTSConnections" = 0
+
+    "HKCU\Control Panel\Accessibility\StickyKeys\Flags" = "506"
+    "HKCU\Control Panel\Accessibility\Keyboard Response\Flags" = "122"
+    "HKCU\Control Panel\Accessibility\ToggleKeys\Flags" = "58"
 }
 
 $registryUpdates.GetEnumerator() | ForEach-Object {
-    & reg add (Split-Path -Parent $_.Key) /v (Split-Path -Leaf $_.Key) /t REG_DWORD /d $_.Value /f | Out-Null
+    $type = "REG_DWORD"
+    if ($_.Value -is [string]) {
+        $type = "REG_SZ"
+    }
+
+    & reg add (Split-Path -Parent $_.Key) /v (Split-Path -Leaf $_.Key) /t $type /d $_.Value /f | Out-Null
 }
 
 Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -Enabled True
@@ -37,7 +46,10 @@ $chocoPrograms = @(
     "nteract"
     "Nuget.CommandLine"
     "Nuget-CredentialProvider-VSS"
+    "PowerBI"
     "RapidEE"
+    "RegexTester"
+    "SQL-Server-Management-Studio"
     "SysInternals"
     "WinDirStat"
 
