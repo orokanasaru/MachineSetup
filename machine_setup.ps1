@@ -73,7 +73,6 @@ $chocoPrograms = @(
 
     # VSCode
     ,@("VisualStudioCode", "/NoDesktopIcon")
-    "VSCode-PowerShell" # code --install ooesn't work for this extension...
 
     # VS2017
     ,@("VisualStudio2017Enterprise", "--add Microsoft.VisualStudio.Workload.DataScience --includeRecommended --includeOptional") # there's no datascience package for some reason
@@ -105,7 +104,7 @@ $chocoPrograms | ForEach-Object {
     }
 }
 
-Stop-Process -Name sublime_text 
+Stop-Process -Name sublime_text
 
 # package is not updated to latest chocolatey api, can be used with a random echo
 Write-Output 'st3' | & choco upgrade SublimeText3.PackageControl -y
@@ -145,7 +144,9 @@ $powershellGitHubPackages | ForEach-Object {
 $vsCodeExtensions = @(
     "donjayamanne.githistory"
     "eamodio.gitlens"
+    "felipecaputo.git-project-manager"
     "ms-vscode.csharp"
+    #"ms-vscode.powershell" -- broken
     "Tyriar.sort-lines"
     "waderyan.gitblame"
 )
@@ -240,7 +241,7 @@ if (!($env:Path -match "R_SERVER")) {
         "$($env:Path);C:\Program Files\Microsoft\R Client\R_SERVER\bin\x64",
         [System.EnvironmentVariableTarget]::Machine)
 }
-    
+
 & refreshenv
 
 $rPackages = @(
@@ -261,7 +262,7 @@ $rPackages = @(
 install.packages(c($(($rPackages | ForEach-Object { "'$_'" }) -join ", ")))
 devtools::install_github('IRkernel/IRkernel')
 IRkernel::installspec()
-"@ | ForEach-Object { & Rscript.exe -e $_ }
+"@ -split "\r?\n" | ForEach-Object { & Rscript.exe -e $_ } #carriage returns break rscript
 
 # make r library writable
 Grant-Permission -Path "C:/Program Files/Microsoft/R Client/R_SERVER/library" -Identity (& whoami) -Permission Write
