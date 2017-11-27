@@ -146,7 +146,7 @@ $vsCodeExtensions = @(
     "eamodio.gitlens"
     "felipecaputo.git-project-manager"
     "ms-vscode.csharp"
-    #"ms-vscode.powershell" -- broken
+    "ms-vscode.powershell"
     "Tyriar.sort-lines"
     "waderyan.gitblame"
 )
@@ -209,6 +209,15 @@ Remove-Item "$env:PUBLIC\Desktop\*.lnk"
 Remove-Item "$env:USERPROFILE\Desktop\*.lnk"
 
 # command correction
+if (!($env:Path -match "Anaconda")) {
+    [Environment]::SetEnvironmentVariable(
+        "Path",
+        "$($env:Path);C:\Program Files\Anaconda3\Scripts",
+        [System.EnvironmentVariableTarget]::Machine)
+}
+
+& refreshenv
+
 pip install --upgrade thefuck
 if (!((Get-Content $PROFILE) -match "fuck")) {
 @"
