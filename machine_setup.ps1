@@ -10,14 +10,16 @@ Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://cho
 . $PROFILE
 
 $registryUpdates = @{
-    "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\EnableAutoTray" = 0
-    "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\HideFileExt" = 0
-    "HKCU\Software\Microsoft\Windows\CurrentVersion\Search\SearchboxTaskbarMode" = 1
-    "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\fDenyTSConnections" = 0
-
     "HKCU\Control Panel\Accessibility\StickyKeys\Flags" = "506"
     "HKCU\Control Panel\Accessibility\Keyboard Response\Flags" = "122"
     "HKCU\Control Panel\Accessibility\ToggleKeys\Flags" = "58"
+    "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\EnableAutoTray" = 0
+    "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\HideFileExt" = 0
+    "HKCU\Software\Microsoft\Windows\CurrentVersion\Search\SearchboxTaskbarMode" = 1
+
+    "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled" = 1
+    "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\fDenyTSConnections" = 0
+    "HKLM\SYSTEM\ControlSet001\Control\FileSystem\LongPathsEnabled" = 1
 }
 
 $registryUpdates.GetEnumerator() | ForEach-Object {
@@ -34,37 +36,46 @@ Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -Enable
 # apply above registry settings
 Stop-Process -ProcessName explorer
 
+# should look into chocolatey provider for oneget
 $chocoPrograms = @(
     "7zip"
     "AutoHotkey"
     "AutoIt"
+    "Brave"
     "ChocolateyGUI"
     "Cmder"
-    ,@("Everything", "/folder-context-menu /run-on-system-startup /service /start-menu-shortcuts")
-    "GoogleChrome"
+    ,@("Everything", "/client-service /folder-context-menu /run-on-system-startup /start-menu-shortcuts")
+    #"GoogleChrome"
+    "firacode"
+    "Firefox"
     "Microsoft-Teams"
-    "nteract"
-    "Nuget.CommandLine"
-    "Nuget-CredentialProvider-VSS"
+    "nodejs"
+    #"nteract"
+    #"Nuget.CommandLine"
+    #"Nuget-CredentialProvider-VSS"
     "PowerBI"
     "RapidEE"
-    "RegexTester"
-    "SQL-Server-Management-Studio"
+    #"RegexTester"
+    "RegScanner.Install"
+    #"SQL-Server-Management-Studio"
     "SysInternals"
-    "WinDirStat"
+    #"WinDirStat"
+    "WizTree"
+    "Vivaldi"
 
     # Editors
-    "Notepad2"
-    "SublimeText3"
+    #"Notepad2"
+    #"SublimeText3"
 
     # Git
     ,@("Git", "/GitAndUnixToolsOnPath /WindowsTerminal")
     "SourceTree"
-    "TortoiseGit"
+    #"TortoiseGit"
 
     # Network Tools
-    "Fiddler4"
-    "PostMan"
+    "Fiddler"
+    #"Fiddler4"
+    #"PostMan"
 
     # Diff Tools
     "BeyondCompare"
@@ -72,28 +83,32 @@ $chocoPrograms = @(
     "WinMerge"
 
     # VSCode
-    ,@("VisualStudioCode", "/NoDesktopIcon")
+    ,@("VSCode", "/NoDesktopIcon")
 
     # VS2017
-    ,@("VisualStudio2017Enterprise", "--add Microsoft.VisualStudio.Workload.DataScience --includeRecommended --includeOptional") # there's no datascience package for some reason
-    "VisualStudio2017-Workload-Azure"
-    "VisualStudio2017-Workload-Data"
-    "VisualStudio2017-Workload-ManagedDesktop"
-    "VisualStudio2017-Workload-NativeDesktop"
-    "VisualStudio2017-Workload-NetCoreTools"
-    "VisualStudio2017-Workload-NetWeb"
-    "VisualStudio2017-Workload-Node"
-    "VisualStudio2017-Workload-Universal"
-    "VisualStudio2017-Workload-VisualStudioExtension"
-    "ncrunch-vs2017"
-    "resharper"
-    "resharpercpp"
-    "dotcover"
-    "dotmemory"
-    "dotpeek"
-    "dottrace"
+    #,@("VisualStudio2017Enterprise", "--add Microsoft.VisualStudio.Workload.DataScience --includeRecommended --includeOptional") # there's no datascience package for some reason
+    #"VisualStudio2017-Workload-Azure"
+    #"VisualStudio2017-Workload-Data"
+    #"VisualStudio2017-Workload-ManagedDesktop"
+    #"VisualStudio2017-Workload-NativeDesktop"
+    #"VisualStudio2017-Workload-NetCoreTools"
+    #"VisualStudio2017-Workload-NetWeb"
+    #"VisualStudio2017-Workload-Node"
+    #"VisualStudio2017-Workload-Universal"
+    #"VisualStudio2017-Workload-VisualStudioExtension"
+    #"ncrunch-vs2017"
+    
+    # VS2019 https://www.1eswiki.com/wiki/Visual_Studio
+    
+    "Resharper-Ultimate-All"
+    #"resharper"
+    #"resharpercpp"
+    #"dotcover"
+    #"dotmemory"
+    #"dotpeek"
+    #"dottrace"
 
-    "R.Studio" # install after VS to use MS R
+    #"R.Studio" # install after VS to use MS R
 )
 
 $chocoPrograms | ForEach-Object {
@@ -104,51 +119,57 @@ $chocoPrograms | ForEach-Object {
     }
 }
 
-Stop-Process -Name sublime_text
+#Stop-Process -Name sublime_text
 
 # package is not updated to latest chocolatey api, can be used with a random echo
-Write-Output 'st3' | & choco upgrade SublimeText3.PackageControl -y
+#Write-Output 'st3' | & choco upgrade SublimeText3.PackageControl -y
 
 Install-PackageProvider Nuget -Force
+(new-object Net.WebClient).DownloadString("http://bit.ly/GetPsGet") | iex
 
 $powershellPackages = @(
     "Carbon"
     "GitHubProvider"
     "Posh-Git"
+    "PoShAncestry"
     "PSColor"
     "Pscx"
 )
 
 $powershellPackages | ForEach-Object {
     if (!($_ -in (Get-InstalledModule).Name)) {
-        Install-Module $_ -Force -AllowClobber
+        #Install-Module $_ -Force -AllowClobber
+        Install-Module $_ -Force 
         Add-Content -Path $PROFILE -Value "Import-Module $_"
     }
 }
 
-$powershellGitHubPackages = @(
-    ,@("DuFace", "PoShAncestry")
-)
+#$powershellGitHubPackages = @(
+#    ,@("DuFace", "PoShAncestry")
+#)
 
 # probably a smarter way to do this
-$powershellGitHubPackages | ForEach-Object {
-    $user = $_[0]
-    $repo = $_[1]
+#$powershellGitHubPackages | ForEach-Object {
+#    $user = $_[0]
+#    $repo = $_[1]
 
-    if (!($_[1] -in (Get-Module).Name)) {
-        Install-Package -ProviderName Github -Source $user -Name $repo -Force
-        Add-Content -Path $PROFILE -Value "Import-Module '$env:LOCALAPPDATA\OneGet\GitHub\$repo-master\$repo.psm1'"
-    }
-}
+#    if (!($_[1] -in (Get-Module).Name)) {
+#        Install-Package -ProviderName Github -Source $user -Name $repo -Force
+#        Add-Content -Path $PROFILE -Value "Import-Module '$env:LOCALAPPDATA\OneGet\GitHub\$repo-master\$repo.psm1'"
+#    }
+#}
+
+& refreshenv
 
 $vsCodeExtensions = @(
-    "donjayamanne.githistory"
-    "eamodio.gitlens"
-    "felipecaputo.git-project-manager"
-    "ms-vscode.csharp"
-    "ms-vscode.powershell"
-    "Tyriar.sort-lines"
-    "waderyan.gitblame"
+    #"donjayamanne.githistory"
+    #"eamodio.gitlens"
+    #"felipecaputo.git-project-manager"
+    #"ms-vscode.csharp"
+    #"ms-vscode.powershell"
+    #"Tyriar.sort-lines"
+    #"waderyan.gitblame"
+    "Shan.code-settings-sync"
 )
 
 $vsCodeExtensions | ForEach-Object {
@@ -162,8 +183,6 @@ $cmderConfigDir = "$cmderDir\config"
 $cmderVendorDir = "$cmderDir\vendor"
 $cmderCmdProfile = "$cmderConfiDir\user-profile.cmd"
 $cmderPsProfile = "$cmderConfigDir\user-profile.ps1"
-
-& refreshenv
 
 # enable aliases to run with clink/powershell
 @"
@@ -212,7 +231,8 @@ Remove-Item "$env:USERPROFILE\Desktop\*.lnk"
 if (!($env:Path -match "Anaconda")) {
     [Environment]::SetEnvironmentVariable(
         "Path",
-        "$($env:Path);C:\Program Files\Anaconda3\Scripts",
+        #"$($env:Path);C:\Program Files\Anaconda3\Scripts",
+        "$($env:Path);C:\Tools\Anaconda3\Scripts",
         [System.EnvironmentVariableTarget]::Machine)
 }
 
@@ -234,7 +254,10 @@ for /F "usebackq delims=" %%A in (``history ^| sed "x;$!d" ^| xargs -0 thefuck``
 
 # customize git
 $gitConfig = @{
+    "alias.root" = "rev-parse --show-toplevel"
     "alias.trim" = "!git branch -vv | sed '/\[[^]]*: gone\]/ !d' | awk '{print `$1}' | xargs git branch -D"
+    "core.ignoreCase" = $false
+    "core.longpaths" = $true
     "remote.origin.prune" = $true
     "rerere.enabled" = $true
 }
@@ -244,38 +267,53 @@ $gitConfig.GetEnumerator() | ForEach-Object {
 }
 
 # install r jupyter
-if (!($env:Path -match "R_SERVER")) {
-    [Environment]::SetEnvironmentVariable(
-        "Path",
-        "$($env:Path);C:\Program Files\Microsoft\R Client\R_SERVER\bin\x64",
-        [System.EnvironmentVariableTarget]::Machine)
-}
+#if (!($env:Path -match "R_SERVER")) {
+#    [Environment]::SetEnvironmentVariable(
+#        "Path",
+#        "$($env:Path);C:\Program Files\Microsoft\R Client\R_SERVER\bin\x64",
+#        [System.EnvironmentVariableTarget]::Machine)
+#}
 
 & refreshenv
 
-$rPackages = @(
-    "crayon"
-    "data.table"
-    "devtools"
-    "digest"
-    "dplyr"
-    "evaluate"
-    "lubridate"
-    "IRdisplay"
-    "pbdZMQ"
-    "repr"
-    "uuid"
-)
+#$rPackages = @(
+#    "crayon"
+#    "data.table"
+#    "devtools"
+#    "digest"
+#    "dplyr"
+#    "evaluate"
+#    "lubridate"
+#    "IRdisplay"
+#    "pbdZMQ"
+#    "repr"
+#    "uuid"
+#)
 
-@"
-install.packages(c($(($rPackages | ForEach-Object { "'$_'" }) -join ", ")))
-devtools::install_github('IRkernel/IRkernel')
-IRkernel::installspec()
-"@ -split "\r?\n" | ForEach-Object { & Rscript.exe -e $_ } #carriage returns break rscript
+#@"
+#install.packages(c($(($rPackages | ForEach-Object { "'$_'" }) -join ", ")))
+#devtools::install_github('IRkernel/IRkernel')
+#IRkernel::installspec()
+#"@ -split "\r?\n" | ForEach-Object { & Rscript.exe -e $_ } #carriage returns break rscript
 
 # make r library writable
-Grant-Permission -Path "C:/Program Files/Microsoft/R Client/R_SERVER/library" -Identity (& whoami) -Permission Write
+#Grant-Permission -Path "C:/Program Files/Microsoft/R Client/R_SERVER/library" -Identity (& whoami) -Permission Write
 
 Enable-WindowsOptionalFeature -FeatureName IIS-ASPNET45,Microsoft-Hyper-V-All -Online -All
+
+# npm 
+# nvm
+start https://github.com/coreybutler/nvm-windows/releases
+
+$npmPackages = @(
+    "@microsoft/rush"
+    "gulp"
+    "jshint"
+    "lerna"
+    "vsts-npm-auth"
+    "yarn"
+)
+
+$npmPackages | ForEach-Object { & npm install -g $_ }
 
 . $PROFILE
