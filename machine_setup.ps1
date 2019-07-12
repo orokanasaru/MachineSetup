@@ -181,8 +181,8 @@ $cmderDir = "C:\tools\cmder"
 $cmderBinDir = "$cmderDir\bin"
 $cmderConfigDir = "$cmderDir\config"
 $cmderVendorDir = "$cmderDir\vendor"
-$cmderCmdProfile = "$cmderConfiDir\user-profile.cmd"
-$cmderPsProfile = "$cmderConfigDir\user-profile.ps1"
+$cmderCmdProfile = "$cmderConfigDir\user_profile.cmd"
+$cmderPsProfile = "$cmderConfigDir\user_profile.ps1"
 
 # enable aliases to run with clink/powershell
 @"
@@ -209,7 +209,7 @@ if (!(Test-Path $cmderPsProfile)) {
     & $cmderVendorDir\profile.ps1
 @"
 . `$PROFILE
-& doskey /MACROFILE="$env:CMDER_ROOT\config\user-aliases.cmd"
+& doskey /MACROFILE="$env:CMDER_ROOT\config\user_aliases.cmd"
 & New-CommandsFromAliases
 "@ | Add-Content -Path $cmderPsProfile
 }
@@ -228,6 +228,7 @@ Remove-Item "$env:PUBLIC\Desktop\*.lnk"
 Remove-Item "$env:USERPROFILE\Desktop\*.lnk"
 
 # command correction
+# check this one day http://nathan-smith.org/blog/using-thefuck-with-clink-cmder
 if (!($env:Path -match "Anaconda")) {
     [Environment]::SetEnvironmentVariable(
         "Path",
@@ -242,6 +243,8 @@ pip install --upgrade thefuck
 if (!((Get-Content $PROFILE) -match "fuck")) {
 @"
 `$env:PYTHIONIOENCODING="utf-8"
+`$env:PYTHONLEGACYWINDOWSSTDIO="yes"
+`$env:THEFUCK_NO_COLORS="true"
 Invoke-Expression "`$(thefuck --alias)"
 "@ | Add-Content -Path $PROFILE
 }
@@ -249,6 +252,8 @@ Invoke-Expression "`$(thefuck --alias)"
 @"
 @if "%_echo%"=="" echo off
 set PYTHONIOENCODING=utf-8
+set PYTHONLEGACYWINDOWSSTDIO=yes
+set THEFUCK_NO_COLORS=true
 for /F "usebackq delims=" %%A in (``history ^| sed "x;$!d" ^| xargs -0 thefuck``) do %%A
 "@ | New-Item $cmderBinDir\fuck.cmd -ItemType File -Force
 
