@@ -258,6 +258,7 @@ $gitConfig = @{
     "alias.trim" = "!git branch -vv | sed '/\[[^]]*: gone\]/ !d' | awk '{print `$1}' | xargs git branch -D"
     "core.ignoreCase" = $false
     "core.longpaths" = $true
+    "push.default" = "current"
     "remote.origin.prune" = $true
     "rerere.enabled" = $true
 }
