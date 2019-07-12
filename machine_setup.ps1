@@ -313,6 +313,7 @@ start https://github.com/coreybutler/nvm-windows/releases
 
 $npmPackages = @(
     "@microsoft/rush"
+    "eslint"
     "gulp"
     "jshint"
     "lerna"
